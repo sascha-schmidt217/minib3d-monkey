@@ -3,18 +3,18 @@
 ''
 
 Import mojo.data
-Import minib3d.vector
+Import minib3d.math.vector
 
 #If TARGET="html5" Or TARGET="glfw" Or TARGET="mingw" Or TARGET="ios" Or TARGET="android"
 
-	Import brl.databuffer
-	'Import opengl.databuffer
+	'Import brl.databuffer
+	Import opengl.databuffer
 
 	Function CreateDataBuffer:DataBuffer(i:Int)
-		Return New DataBuffer(i)
+		Return DataBuffer.Create(i)
 	End
 	Function GetBufferLength:Int(buf:DataBuffer)
-		Return buf.Length()
+		Return buf.Size()
 	End
 #rem	
 	Class DataBuffer Extends DataBuffer
@@ -28,7 +28,7 @@ Import minib3d.vector
 	End
 #end
 
-#Elseif TARGET="xna" Or TARGET="win8"
+#elseif TARGET="xna"
 	
 	'Import xna.xna_driver.databuffer	
 	Import brl.databuffer
@@ -255,7 +255,7 @@ Function CopyDataBuffer:VertexDataBuffer( src:VertexDataBuffer, dest:VertexDataB
 	Return dest
 End
 
-Function CopyDataBuffer:VertexDataBuffer( src:VertexDataBuffer, dest:VertexDataBuffer, begin:Int, bend:Int  ) 'begin:Int=0, bend:Int=0 )
+Function CopyDataBuffer:VertexDataBuffer( src:VertexDataBuffer, dest:VertexDataBuffer, begin:Int=0, bend:Int=0 )
 	
 	If src.buf = Null Then Return dest
 	
@@ -311,6 +311,12 @@ Class FloatBuffer
 		buf.PokeFloat(i*12,v0)
 		buf.PokeFloat((i)*12+4,v1)
 		buf.PokeFloat((i)*12+8,v2)
+		
+	End
+	
+	Method PeekVertCoords:Vector(i:Int)
+		
+		Return New Vector(buf.PeekFloat(i*12), buf.PeekFloat((i)*12+4), buf.PeekFloat((i)*12+8))
 		
 	End
 	
@@ -418,6 +424,92 @@ Function CopyShortBuffer:ShortBuffer( src:ShortBuffer, dest:ShortBuffer )
 	
 	Return dest
 End
+
+
+
+
+
+Class BufferReader
+	
+	Field data:DataBuffer
+	Field pos:Int ''seek position
+	Field size:Int=0
+	
+	Global i2f:DataBuffer
+
+	Method New()
+
+		i2f = CreateDataBuffer(4)
+
+	End
+	
+	Function Create:BufferReader( d:DataBuffer )
+	
+		Local br:BufferReader = New BufferReader
+		br.data = d
+		br.size = GetBufferLength(d)-1
+		br.pos = 0
+		Return br
+		
+	End
+	
+	Method Size:Int()
+		Return size
+	End
+
+	Method ReadByte:Int()
+		pos += 1
+		Return data.PeekByte(pos-1)
+	End
+
+	''Endianness is different for targets, so use PeekInt()
+	Method ReadInt:Int()
+		pos += 4
+		'i2f.PokeByte(0,data.PeekByte(pos-4))
+		'i2f.PokeByte(1,data.PeekByte(pos-3))
+		'i2f.PokeByte(2,data.PeekByte(pos-2))
+		'i2f.PokeByte(3,data.PeekByte(pos-1))
+		Return ((data.PeekByte(pos-1) & $000000ff) Shl 24) | ((data.PeekByte(pos-2)& $000000ff) Shl 16) | ((data.PeekByte(pos-3)& $000000ff) Shl 8) | (data.PeekByte(pos-4)& $000000ff)
+		'i2f.PokeInt(0, v)
+		'Return i2f.PeekInt(0)
+	End
+	
+	''reads across 4-byte alignment, important!
+	Method ReadFloat:Float()
+		pos += 4
+		'i2f.PokeByte(0,data.PeekByte(pos-4))
+		'i2f.PokeByte(1,data.PeekByte(pos-3))
+		'i2f.PokeByte(2,data.PeekByte(pos-2))
+		'i2f.PokeByte(3,data.PeekByte(pos-1))
+		i2f.PokeInt(0, ((data.PeekByte(pos-1) & $000000ff) Shl 24) | ((data.PeekByte(pos-2)& $000000ff) Shl 16) | ((data.PeekByte(pos-3)& $000000ff) Shl 8) | (data.PeekByte(pos-4)& $000000ff) )
+		Return i2f.PeekFloat(0)
+	End
+
+	''shortcut for b3d, loads a 4-byte "tag", does not increment position
+	Method ReadTag:Int()
+
+		If pos+3>size Then Return 0
+		Return ((data.PeekByte(pos+3) Shl 24) | (data.PeekByte(pos+2) Shl 16) | (data.PeekByte(pos+1) Shl 8) | (data.PeekByte(pos)))
+
+	End
+
+	Method Position:Int()
+		Return pos
+	End
+
+	Method SetPosition(p:Int)
+		pos = p
+	End
+
+
+	Method Eof:Bool()
+		If pos >= size Then Return True Else Return False
+	End
+
+End
+
+
+
 
 
 #rem

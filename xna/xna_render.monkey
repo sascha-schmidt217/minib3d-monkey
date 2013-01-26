@@ -2,18 +2,19 @@
 
 Import mojo
 Import xna 
-
+Import xna_pixmap
 Import minib3d.trender
 Import minib3d
 
-Import xna_pixmap
-Import xna_common
 
 #rem
 
+minib3d fix:
+- fixed null reference in Quaternion.RotateVector
+
 Notes:
- 
- http://msdn.microsoft.com/en-us/library/ff604995.aspx
+------------------------------------------------------------------------------------------------------------------------
+Hardare caps		-	http://msdn.microsoft.com/en-us/library/ff604995.aspx
 
 vbos - xna must use vbo, as data is loaded in via byte buffer (yes, in xna)
 lights - no point or spotlight or multiple light without HLSL
@@ -21,6 +22,53 @@ lights - no point or spotlight or multiple light without HLSL
 -- make sure to clear states before returning to mojo
 
 #end 
+
+
+#XNA_PERPIXEL_LIGHNING=True
+
+
+Interface IRender
+	Method GetVersion:Float() 
+	Method Reset:Void()  
+	Method Finish:Void()  
+	Method GraphicsInit:Int(flags:Int=0)  
+	Method Render:Void(ent:TEntity, cam:TCamera = Null)  
+	Method ClearErrors:Int() 
+	Method BindTexture:TTexture(tex:TTexture,flags:Int) 
+	Method DeleteTexture(glid:Int[]) 
+	Method UpdateLight(cam:TCamera, light:TLight) 
+	Method DisableLight(light:TLight) 
+	Method UpdateCamera(cam:TCamera) 
+End
+
+Interface ITextureDriver
+	Method Load(file?)
+	Method Create(width, height, flags)
+	Method Create(buffer:DataBuffer, flags)
+	Method Free()
+	Method Width()
+	Method Height()
+End
+
+Interface ISurfaceDriver			
+End
+
+
+Class XNATextureDriver
+End
+
+Class XNASurfaceDriver
+End
+
+
+Function SetRender(flags:Int=0)
+	
+	TRender.render = New XNARender
+	TRender.render.GraphicsInit(flags)
+	
+End
+
+
 
 Class XNARender Extends TRender
 	
@@ -49,11 +97,6 @@ Public
 		_xna		= New XNAController(_device)
 	End
 	
-	Method GetTexture:XNATexture(tex:TTexture)
-		Return _textures.Get( tex.gltex[0] )
-	End
-	
-
 	Method ClearErrors:Int()
 	End
 	
@@ -91,6 +134,7 @@ Public
 		Local mesh:TMesh = TMesh(ent)
 		If Not mesh Then Return
 		
+		''If _device.GraphicsDeviceStatus() Then Print "<<<<<<<"
 
 		'' draw surfaces with alpha last
 		Local temp_list:List<TSurface> = mesh.surf_list
@@ -102,7 +146,9 @@ Public
 		Else
 			_xna.WorldMatrix(ent.mat.ToArray())
 		Endif
-
+		
+		
+		
 		'' update camera, effects
 		_xna.UpdateEffect(ent, cam)
 					
@@ -143,12 +189,14 @@ Public
 					If mesh.anim
 						
 						Local meshx:= _meshes.Get(mesh.anim_surf[surf.surf_id].vbo_id[0])
+						If Not meshx Then surf.vbo_id[0]=0; Continue
 						meshx.Bind()
 						meshx.Render()
 					
 					Else
 		
 						Local meshx:= _meshes.Get(surf.vbo_id[0])
+						If Not meshx Then surf.vbo_id[0]=0; Continue
 						meshx.Bind()
 						meshx.Render()
 					Endif 
@@ -172,6 +220,8 @@ Public
 	End
 
 	Method Finish:Void()
+	
+
 	End
 	
 	Method EnableStates:Void()
@@ -222,7 +272,7 @@ Public
 	' Here is a tip for rendering objects within the Draw method of an Xbox 360 game. 
 	' Do not use SetData when writing data to vertex buffers, index buffers, and textures: http://msdn.microsoft.com/en-us/library/bb198834
 	Method BindTexture:TTexture(tex:TTexture,flags:Int)
-
+	
 		' if mask flag is true, mask pixmap
 		If flags&4
 			tex.pixmap.MaskPixmap(0,0,0)
@@ -347,39 +397,7 @@ Public
 	Method BackBufferToTex(mipmap_no=0,frame=0)
 	End 
 	
-	'''
-	
-	Field _spriteBatch:XNASpriteBatch
-	Field _xnaTex:XNATexture
-	Field _lastTex:TTexture 
-	
-	Method Begin2D()
-		if Not _spriteBatch Then 
-			_spriteBatch = New XNASpriteBatch	
-		End 
-		_spriteBatch.BeginRender()
-	End
-	
-	Method DrawTexture(tex:TTexture,x#,y#, _r#,_g#,_b#,_a#, _angle#, _hx#, _hy#, _sx#,_sy#)
-	
-		if tex <> _lastTex Then 
-		
-			_lastTex = tex
-			_xnaTex = GetTexture(tex)
-			
-			_spriteBatch.EndRender()
-			_spriteBatch.BeginRender()
-		
-		EndIf
-			
-		 _spriteBatch.Draw(_xnaTex,x,y, _r,_g,_b,_a, _angle, _hx, _hy, _sx,_sy)
-		 
-	End
-	
-	Method End2D()
-		_spriteBatch.EndRender()
-		Self.Reset()
-	End
+	'################################################################################
 	
 Private 
 	
@@ -437,6 +455,11 @@ Private
 End
 
 
+
+
+
+
+
 ' First of all for managing different XNAEffects
 ' e.g. switching between XNABasicEffect, XNAEnvironmentMapEffect
 ' also manage state switching
@@ -468,12 +491,12 @@ Private
 	Field _basicEffect			:BasicEffect
 	Field _enviromentEffect		:BasicEffect
 	Field _draw2DEffect			:Draw2DEffect
+
 	
 	Field _lastTexture			:TTexture
 	
 	' last combined brush values
 	Field tex_count%, _red#,_green#,_blue#,_alpha#,_shine#,_blend%,_fx%, tex_flags%, textures:TTexture[]
-
 
 
 Public 
@@ -505,41 +528,21 @@ Public
 		_depthStencilNoDepth	= XNADepthStencilState.Create ''is same as "none"
 		_depthStencilNoDepth.DepthBufferEnable = False
 		_depthStencilNoDepth.DepthBufferWriteEnable = False
+		
+		_blendStates 		= [XNABlendState.AlphaBlend, XNABlendState.AlphaBlend, XNABlendState.Premultiplied, XNABlendState.Additive, XNABlendState.Opaque]
+		_st_uvNormal 		= UVSamplerState.Create( TextureFilter_Point )
+		_st_uvSmooth 		= UVSamplerState.Create( TextureFilter_LinearMipPoint  )
 
-		_blendStates =[XNABlendState.Premultiplied, XNABlendState.Premultiplied, XNABlendState.AlphaBlend, XNABlendState.Additive, XNABlendState.Opaque]
-
-		#if XNA_MIPMAP_QUALITY=0 then 
-			Local bias:Float = 0.5
-		#else if XNA_MIPMAP_QUALITY=1 then 
-			Local bias:Float = 0
-		#else if XNA_MIPMAP_QUALITY=2 then 
-			Local bias:Float = -0.5
-			Print bias
-		#End 
-		
-		_st_uvNormal = UVSamplerState.Create(TextureFilter_Point, bias)
-		
-		#if XNA_MIPMAP_FILTER=1 then
-			_st_uvSmooth = UVSamplerState.Create(TextureFilter_Linear, bias)
-		#else
-			_st_uvSmooth = UVSamplerState.Create(TextureFilter_LinearMipPoint, bias)
-		#End 
-		
 	End
 
-	Field _cam:TCamera
-	
 	Method Reset()
 
 		ClearStates()
-		
-		_device.RasterizerState = XNARasterizerState.CullClockwise;
-        _device.DepthStencilState = XNADepthStencilState.None;
-
+			
 		_lastEffect = _basicEffect
 		_basicEffect.Reset()
-		_lastTexture = Null
 		tex_count=0
+		_lastTexture = Null
 	End
 	
 	Method SetLightEnable(id, enable?)
@@ -591,13 +594,13 @@ Public
 		Else
 			_lastEffect.Effect().FogEnabled = False 
 		Endif
+
 	End
 	
 	
 	
 	Method SetStates(ent:TEntity, surf:TSurface, cam:TCamera )
 		
-		_cam = cam
 		''for some reason, we get null textures coming through...
 
 		Local filter:UVSamplerState, state:XNASamplerState
@@ -634,13 +637,13 @@ Public
 		Elseif tex_count>0 And has_texture				
 			state = filter._wU_wV ''only use wrap with power-of-two textures 
 		End
-
+	
 		' ' preserve sampler state
 		If state <> _lastSamplerState Then 
 			_device.SamplerState(0, state)
 			_lastSamplerState = state
 		End 
-
+		
 		'----------------
 		
 		' fx flag 16 - disable backface culling
@@ -655,8 +658,16 @@ Public
 			_device.RasterizerState = _rasterizerWire
 		Endif
 
+		'' fx flag 32 - force alpha
+		If _fx&32
+			surf.alpha_enable=True
+		Endif
+		
+		
+
 		' take into account auto fade alpha
 		_alpha=_alpha-ent.fade_alpha
+
 		
 		' if surface contains alpha info, enable blending
 		''and  fx flag 64 - disable depth testing
@@ -688,10 +699,6 @@ Public
 		_device.DepthStencilState = _depthStencilDefault
 		_device.BlendState = _blendStates[0]
 		
-		If _cam And _basicEffect
-			_basicEffect.Effect().FogEnabled = _cam.fog_mode > 0
-		End 
-			
 	End
 	
 	
@@ -824,6 +831,12 @@ Public
 			If BasicEffect(e) Then BasicEffect(e).NoLighting
 		Endif
 		
+		If e._disable_fog
+			e.Fog(False)
+		Else
+			e.Fog(True)
+		Endif
+		
 	End
 	
 	
@@ -895,6 +908,32 @@ Function TransformTexCoords(surf:TSurface, angle#, tx#, ty#, sx#, sy#, orig_uv#[
 	
 End
 
+
+
+Class UVSamplerState
+
+	Field _cU_cV:XNASamplerState
+	Field _wU_cV:XNASamplerState
+	Field _cU_wV:XNASamplerState
+	Field _wU_wV:XNASamplerState
+	
+	Function Create:UVSamplerState(filter:Int)
+	
+		Local s:UVSamplerState = New UVSamplerState
+		
+		s._cU_cV 		= XNASamplerState.Create( filter, TextureAddressMode_Clamp, TextureAddressMode_Clamp)
+		s._wU_cV 		= XNASamplerState.Create( filter, TextureAddressMode_Wrap , TextureAddressMode_Clamp)
+		s._cU_wV 		= XNASamplerState.Create( filter, TextureAddressMode_Clamp, TextureAddressMode_Wrap)
+		s._wU_wV 		= XNASamplerState.Create( filter, TextureAddressMode_Wrap, TextureAddressMode_Wrap)
+		
+		Return s
+		
+	End
+	
+End
+
+
+
 Interface IEffectContainer
 	Method Effect:XNAEffect() 
 	Method Update(cam:TCamera, ent:TEntity, e:IEffectContainer)
@@ -920,6 +959,7 @@ Class EffectContainer Implements IEffectContainer
 	Field _updateProjection? 	= True
 	Field _effect				:XNAEffect
 	Field _name					:String
+	Field _disable_fog			:Bool
 	
 	Method Bind(ent:TEntity, surf:TSurface, 
 		_red#,_green#,_blue#, _alpha#, _shine#, _fx%, tex_count, textures:TTexture[] ) Abstract
@@ -933,7 +973,8 @@ Class EffectContainer Implements IEffectContainer
 		_updateView = True
 		_updateLight = True
 		_updateProjection = True
-		_effect.FogEnabled = False
+		'_effect.FogEnabled = False
+		_disable_fog = False
 	End
 	
 	
@@ -997,6 +1038,10 @@ Class EffectContainer Implements IEffectContainer
 		_effect.WorldMatrix(mat)
 	End
 	
+	Method Fog:Void(enable?)
+		If enable Then _effect.FogEnabled = True Else _effect.FogEnabled = False
+	End
+	
 	Method Update(cam:TCamera, ent:TEntity, e:IEffectContainer)
 	
 		Return 
@@ -1041,7 +1086,7 @@ Class BasicEffect Extends EffectContainer
 			effect.AmbientLightColor(1,1,1)
 			effect.LightingEnabled = False
 			effect.SpecularPower(0)
-			effect.Alpha = 1.0
+			'effect.Alpha = _alpha
 		Else 
 			effect.AmbientLightColor(TLight.ambient_red, TLight.ambient_green, TLight.ambient_blue)
 			effect.LightingEnabled = True
@@ -1056,13 +1101,16 @@ Class BasicEffect Extends EffectContainer
 			effect.VertexColorEnabled = False 
 			effect.DiffuseColor(_red,_green,_blue)
 	        effect.Alpha = _alpha
+			effect.SpecularPower(_shine)
 		Endif
 		
 		' fx flag 4 - flatshaded
 
 		' fx flag 8 - disable fog
 		If _fx&8 Then 
-			effect.FogEnabled = False 
+			_disable_fog = True 
+		Else
+			_disable_fog = False
 		End 
 		
 		
@@ -1095,7 +1143,7 @@ Class BasicEffect Extends EffectContainer
 	Method NoLighting:Void()
 		
 		Local effect:XNABasicEffect = XNABasicEffect(_effect)
-		effect.FogEnabled = False
+		_disable_fog = True
 		effect.LightingEnabled = False
 		effect.AmbientLightColor(1,1,1)
 		effect.SpecularPower(0)
@@ -1134,7 +1182,7 @@ Class Draw2DEffect Extends BasicEffect
 		Super.Bind(ent,surf,_red,_green,_blue,_alpha,_shine,_fx,tex_count,textures)
 		
 		Local effect:XNABasicEffect = XNABasicEffect(_effect)
-		effect.FogEnabled = False
+		_disable_fog = True
 		effect.LightingEnabled = False
 		effect.AmbientLightColor(1,1,1)
 		effect.SpecularPower(0)
@@ -1178,7 +1226,7 @@ Class EnvironmentMapEffect Extends EffectContainer
 		
 		' fx flag 8 - disable fog
 		If _fx&8 Then 
-			effect.FogEnabled = False 
+			effect._disable_fog = True 
 		End 
 		
 		' set textures

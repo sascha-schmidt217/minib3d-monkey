@@ -766,7 +766,7 @@ Class OpenglES11 Extends TRender
 			If cam.draw2D
 				glDisable(GL_DEPTH_TEST)
 				glDisable(GL_FOG)
-				glDisable(GL_LIGHTING) '' if disabled, EntityColor does not work. fullbright does the job!
+				glDisable(GL_LIGHTING)
 			Endif
 
 			If TRender.render.wireframe
@@ -978,6 +978,7 @@ Class OpenglES11 Extends TRender
 	
 		If surf.vbo_id[0]<>0 
 			glDeleteBuffers(6,surf.vbo_id)
+			surf.vbo_id[0]=0
 		Endif
 	
 	End 
@@ -1025,7 +1026,7 @@ Class OpenglES11 Extends TRender
 		''
 		'' --PIXMAP MUST BE POWER OF TWO
 		''
-	
+		
 		TRender.render.ClearErrors()	
 		
 		''retrieve bind flags from stack

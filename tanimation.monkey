@@ -1,5 +1,5 @@
 Import minib3d
-
+Import minib3d.monkeybuffer
 
 ''
 '' NOTES:
@@ -11,16 +11,21 @@ Class TVertexAnim
 	Field offset:Int
 	Field vert_buffer:FloatBuffer
 	
+	Method PeekVertCoords:Vector(i:Int)
+
+		Return vert_buffer.PeekVertCoords(i)
+		
+	End
+	
 End
 
 Class TAnimation
 	
 	
 
-	#If TARGET="xna" Or TARGET="win8"
+	#If TARGET="xna"
 	
 		Const DONT_USE_VERT_POINTER:Int = True
-		
 	#Else
 		Const DONT_USE_VERT_POINTER:Int = False
 	
@@ -279,31 +284,17 @@ Class TAnimation
 			
 				If DONT_USE_VERT_POINTER = False
 				
-					
 					anim_surf.anim_frame = frame
 					anim_surf.reset_vbo = anim_surf.reset_vbo|1
 					
 				Else
 					
-						#If TARGET="xna" Or TARGET="win8"
-	
-							UpdateVertexDataBufferPositions(anim_surf.vert_data.buf,  
-									anim_surf.vert_anim[frame].vert_buffer.buf, 
-									anim_surf.no_verts)
-							
-						#Else
-							
-							'' --- per vertex memory copy, slow, used for XNA
-							For Local vid:Int=0 To anim_surf.no_verts-1
-								Local vv:Int = vid*3
-								anim_surf.vert_data.PokeVertCoords(vid, 
-									anim_surf.vert_anim[frame].vert_buffer.Peek(vv),
-									anim_surf.vert_anim[frame].vert_buffer.Peek(vv+1), 
-									anim_surf.vert_anim[frame].vert_buffer.Peek(vv+2))
-							Next 
-						
-						#Endif
-	
+					'' --- per vertex memory copy, slow, used for XNA
+					For Local vid:Int=0 To anim_surf.no_verts-1
+						Local vv:Int = vid*3
+						anim_surf.vert_data.PokeVertCoords(vid, anim_surf.vert_anim[frame].vert_buffer.Peek(vv), anim_surf.vert_anim[frame].vert_buffer.Peek(vv+1), anim_surf.vert_anim[frame].vert_buffer.Peek(vv+2))
+					Next 
+					
 					''update vbo
 					anim_surf.reset_vbo = anim_surf.reset_vbo|1
 					
@@ -317,12 +308,7 @@ Class TAnimation
 		
 	End
 	
-	Function transformVertices:Void(vertices:DataBuffer, bones:float[][][],	
-		vert_bone1_no:Int[], vert_weight1:Float[],
-		vert_bone2_no:Int[], vert_weight2:Float[],	
-		vert_bone3_no:Int[], vert_weight3:Float[],
-		vert_bone4_no:Int[], vert_weight4:Float[])	
-	End
+	
 	
 	Function VertexDeform:Void(ent:TMesh)
 
@@ -333,6 +319,8 @@ Class TAnimation
 		Local bone:TBone
 		Local weight:Float
 		
+
+	
 		' cycle through all surfs
 		For Local surf:TSurface=Eachin ent.surf_list
 
@@ -436,7 +424,6 @@ Class TAnimation
 					'anim_surf.VertexCoords(vid,x,y,z)
 					
 					anim_surf.vert_data.PokeVertCoords(vid,x,y,z)
-					
 					'Local j:= vid3*4
 					'anim_surf.vert_coords.buf.PokeFloat(j+0,x)
 					'anim_surf.vert_coords.buf.PokeFloat(j+4,y)

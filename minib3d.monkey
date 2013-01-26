@@ -25,7 +25,7 @@ Import mojo
 
 #MINIB3D_DRIVER=""
 #MINIB3D_DEBUG_MODEL=0
-
+'#OPENGL_GLES20_ENABLED=False ''this screws up opengl20 on html5
 
 ''to choose opengles20, must specify it
 #If MINIB3D_DRIVER=""
@@ -35,8 +35,6 @@ Import mojo
 		Import minib3d.opengl.opengles20
 	#Elseif TARGET="xna"
 		Import minib3d.xna
-	#ElseIf TARGET="win8"
-		Import minib3d.d3d11
 	#endif
 #endif
 
@@ -44,7 +42,6 @@ Import mojo
 
 '' global
 Import trender
-'Import tglobal ''depricated
 
 
 '' entity
@@ -64,6 +61,7 @@ Import tbone
 Import tanimation
 Import tmodelb3d
 Import tmodelobj
+Import tmodelmdd
 
 '' picking/collision
 Import tcoltree
@@ -71,9 +69,9 @@ Import tpick
 Import tcollision
 
 '' geom
-Import vector
-Import matrix
-Import quaternion
+Import minib3d.math.vector
+Import minib3d.math.matrix
+'Import minib3d.math.quaternion
 'Include "inc/BoxSphere.monkey"
 
 '' misc
