@@ -142,6 +142,17 @@ public class XNAGraphicsResource : IDisposable
         if (_disposed) return;
         _disposed = true;
     }
+    
+    public float GetShaderVersion() {
+		//GraphicsDeviceCapabilities caps = GraphicsDevice.GraphicsDeviceCapabilities;
+		//return caps.PixelShaderVersion; //MaxPixelShaderProfile;
+		if (_device._device.GraphicsProfile == GraphicsProfile.Reach) {return 2.0f;} else { return 3.0f; }
+	}
+	
+    public int GraphicsDeviceStatus() 
+    {
+   		return Convert.ToInt32(_device._device.GraphicsDeviceStatus);	
+	}
 }
 
 public class XNAGraphicsDevice

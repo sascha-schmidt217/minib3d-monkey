@@ -7,7 +7,6 @@ Import minib3d.trender
 Import minib3d
 
 Import xna_pixmap
-Import xna_common
 
 #rem
 
@@ -143,12 +142,15 @@ Public
 					If mesh.anim
 						
 						Local meshx:= _meshes.Get(mesh.anim_surf[surf.surf_id].vbo_id[0])
+						If Not meshx Then surf.vbo_id[0]=0; Continue
 						meshx.Bind()
 						meshx.Render()
 					
 					Else
 		
 						Local meshx:= _meshes.Get(surf.vbo_id[0])
+						If Not meshx Then surf.vbo_id[0]=0; Continue
+						
 						meshx.Bind()
 						meshx.Render()
 					Endif 
@@ -892,6 +894,32 @@ Function TransformTexCoords(surf:TSurface, angle#, tx#, ty#, sx#, sy#, orig_uv#[
 		Local v# = (vx*sa+ca*vy) +oy '+ ty
 		surf.VertexTexCoords(i, u,v, coordset)
 	Next
+	
+End
+
+
+Class UVSamplerState
+
+	Field _cU_cV:XNASamplerState
+	Field _wU_cV:XNASamplerState
+	Field _cU_wV:XNASamplerState
+	Field _wU_wV:XNASamplerState
+	
+	Function Create:UVSamplerState(filter:Int, bias:Float)
+	
+		Local s:UVSamplerState = New UVSamplerState
+		
+		s._cU_cV = XNASamplerState.Create(filter, TextureAddressMode_Clamp, TextureAddressMode_Clamp)
+	
+		s._wU_cV = XNASamplerState.Create(filter, TextureAddressMode_Wrap, TextureAddressMode_Clamp)
+	
+		s._cU_wV = XNASamplerState.Create(filter, TextureAddressMode_Clamp, TextureAddressMode_Wrap)
+
+		s._wU_wV = XNASamplerState.Create(filter, TextureAddressMode_Wrap, TextureAddressMode_Wrap)
+
+		Return s
+		
+	End
 	
 End
 

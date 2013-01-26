@@ -215,6 +215,7 @@ Class XNASamplerState = "XNASamplerState"
 	Method MaxAnisotropy:Void(value%)Property = "SetMaxAnisotropy"
 	Method MaxMipLevel:Void(value%)Property = "SetMaxMipLevel"
 	Method MipMapLevelOfDetailBias:Void(value#)Property = "SetMipMapLevelOfDetailBias"
+	Method ToString:String() = "ToString"
 	
 	Function Create:XNASamplerState() = "Create"
 	Function Create:XNASamplerState(filter, adressU, adressV) = "Create"
@@ -315,6 +316,7 @@ Class XNAGraphicsDevice  = "XNAGraphicsDevice"
 	Method Viewport:Void(x,y,width, height)
 	Method GetShaderVersion:Float()
 	Method PreferMultiSampling(value?) = "SetPreferMultiSampling"
+	Method GraphicsDeviceStatus:Int()
 End
 
 '----------------------------------------------------------------------------------------------------------
