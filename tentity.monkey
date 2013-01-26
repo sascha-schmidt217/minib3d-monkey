@@ -1994,8 +1994,9 @@ Class TEntity
 		
 		If load_identity=False And parent
 			''load parent mat
-			mat.Overwrite(parent.mat)
+			'mat.Overwrite(parent.mat)
 			'mat.Translate4(px,py,pz)
+	
 			mat.grid[3][0] = parent.mat.grid[0][0]*px + parent.mat.grid[1][0]*py + parent.mat.grid[2][0]*pz + parent.mat.grid[3][0]
 			mat.grid[3][1] = parent.mat.grid[0][1]*px + parent.mat.grid[1][1]*py + parent.mat.grid[2][1]*pz + parent.mat.grid[3][1]
 			mat.grid[3][2] = parent.mat.grid[0][2]*px + parent.mat.grid[1][2]*py + parent.mat.grid[2][2]*pz + parent.mat.grid[3][2]
