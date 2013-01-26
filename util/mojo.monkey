@@ -205,7 +205,7 @@ Private
 End	
 
 Function B2DLoadImage:B2DImage( path$,frameCount=1,flags=B2DImage.DefaultFlags)
-	Local surf:= LoadTexture(path, 2 | 16 | 32 | TTexture.PRESERVE_SIZE)
+	Local surf:= LoadTexture(path, 2 | 16 | 32 | TEXFLAG_PRESERVE_SIZE)
 	If surf Then Return New B2DImage().Init(surf,frameCount,flags )
 End
 

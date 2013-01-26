@@ -35,6 +35,8 @@ Import mojo
 		Import minib3d.opengl.opengles20
 	#Elseif TARGET="xna"
 		Import minib3d.xna
+	#ElseIf TARGET="win8"
+		Import minib3d.d3d11
 	#endif
 #endif
 

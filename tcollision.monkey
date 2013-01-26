@@ -306,9 +306,6 @@ Class CollisionInfo
 		
 	End
 	
-	
-	
-	
 	Function UpdateCollisions()
 	
 		'DebugLog "Update Collisions"
