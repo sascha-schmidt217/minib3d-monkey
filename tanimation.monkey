@@ -21,12 +21,12 @@ End
 
 Class TAnimation
 	
-	
-
-	#If TARGET="xna"
+	#If TARGET="xna" Or TARGET="win8"
 	
 		Const DONT_USE_VERT_POINTER:Int = True
+		
 	#Else
+	
 		Const DONT_USE_VERT_POINTER:Int = False
 	
 	#Endif
@@ -284,17 +284,31 @@ Class TAnimation
 			
 				If DONT_USE_VERT_POINTER = False
 				
+					
 					anim_surf.anim_frame = frame
 					anim_surf.reset_vbo = anim_surf.reset_vbo|1
 					
 				Else
 					
-					'' --- per vertex memory copy, slow, used for XNA
-					For Local vid:Int=0 To anim_surf.no_verts-1
-						Local vv:Int = vid*3
-						anim_surf.vert_data.PokeVertCoords(vid, anim_surf.vert_anim[frame].vert_buffer.Peek(vv), anim_surf.vert_anim[frame].vert_buffer.Peek(vv+1), anim_surf.vert_anim[frame].vert_buffer.Peek(vv+2))
-					Next 
-					
+						#If TARGET="xna" Or TARGET="win8"
+	
+							UpdateVertexDataBufferPositions(anim_surf.vert_data.buf,  
+									anim_surf.vert_anim[frame].vert_buffer.buf, 
+									anim_surf.no_verts)
+							
+						#Else
+							
+							'' --- per vertex memory copy, slow, used for XNA
+							For Local vid:Int=0 To anim_surf.no_verts-1
+								Local vv:Int = vid*3
+								anim_surf.vert_data.PokeVertCoords(vid, 
+									anim_surf.vert_anim[frame].vert_buffer.Peek(vv),
+									anim_surf.vert_anim[frame].vert_buffer.Peek(vv+1), 
+									anim_surf.vert_anim[frame].vert_buffer.Peek(vv+2))
+							Next 
+						
+						#Endif
+	
 					''update vbo
 					anim_surf.reset_vbo = anim_surf.reset_vbo|1
 					
