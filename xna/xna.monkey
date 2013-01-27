@@ -1,7 +1,7 @@
 #MINIB3D_DRIVER="xna"
 
 #XNA_PERPIXEL_LIGHNING=True' only used in reach profile
-#XNA_PROFILE="reach"
+#XNA_PROFILE="hidef"
 #XNA_MIPMAP_FILTER=1' 0 for point / 1 for linear
 #XNA_MIPMAP_QUALITY=2 ' sets bias to 0=0.5, 1=0, 2=-0.5
 
@@ -21,8 +21,10 @@
 
 #End 
 
-Import minib3d.xna.xna_driver.xna
-
+Import xna_driver.xna
+Import xna_pixmap
+Import xna_shader
+Import xna_shader_default
 
 Function SetRender(flags:Int=0)
 	

@@ -179,6 +179,7 @@ Public
 	Method EnableStates:Void()
 	End 
 
+	
 	Method UpdateVBO:Int(surf:TSurface)
 	
 		Local m:XNAMesh = Null
@@ -320,7 +321,7 @@ Public
 			
 		Endif
 	End
-
+	
 	Method UpdateCamera(cam:TCamera)
 		
 		'If (_device)

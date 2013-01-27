@@ -1376,15 +1376,11 @@ public class XNAEffect
 		_effect = effect;
 		_device = device;
 		
-		foreach(var technique in _effect.Techniques)
-        {
-			_techniques.Add(  technique.Name ,new XNAEffectTechnique(technique) );
-        }
-		
-		foreach(var parameter in _effect.Parameters)
-        {
-			_parameters.Add(  parameter.Name ,new XNAEffectParameter(parameter) );
-        }
+		_techniques = _effect.Techniques
+                .Select( t => new XNAEffectTechnique(t)).ToDictionary(e => e.GetName());
+
+        _parameters = _effect.Parameters
+                .Select(p => new XNAEffectParameter(p)).ToDictionary(p => p.GetName());
 		
 		SetCurrentTechnique(_techniques[_effect.CurrentTechnique.Name]);
 	}
@@ -1398,6 +1394,12 @@ public class XNAEffect
 	{
 		_curentTechnique = technique;
 		_effect.CurrentTechnique = technique._technique;
+	}
+	
+	public void Dispose()
+	{
+		_effect.Dispose();
+		_effect = null;
 	}
 	
 	public XNAGraphicsDevice GetGraphicsDevice()
@@ -1414,6 +1416,11 @@ public class XNAEffect
 	{
 		return _parameters[name];
 	}
+
+    public XNAEffectParameter GetParameter2(int index)
+    {
+        return _parameters.Select((pair) => pair.Value).ElementAt(index);
+    }
 	
 	public int CountParameters() 
 	{
@@ -1424,6 +1431,11 @@ public class XNAEffect
 	{
 		return _techniques[name];
 	}
+	
+	public XNAEffectTechnique GetTechnique2(int index)
+    {
+        return _techniques.Select((pair) => pair.Value).ElementAt(index);
+    }
 	
 	public int CountTechniques() 
 	{
@@ -1518,6 +1530,16 @@ public class XNAEffectParameter
 		_parameter = parameter;
 	}
 
+	 public XNAEffectParameter[] GetElements()
+    {
+        return _parameter.Elements.Select((p) => new XNAEffectParameter(p)).ToArray();
+    }
+
+    public XNAEffectParameter[] GetStructureMembers()
+    {
+        return _parameter.StructureMembers.Select((p) => new XNAEffectParameter(p)).ToArray();
+    } 
+    
 	public int GetParameterClass() {return (int)_parameter.ParameterClass;}
 	public int GetParameterType(){return (int)_parameter.ParameterType;}
 	public string GetName() {return _parameter.Name;}

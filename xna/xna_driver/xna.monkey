@@ -392,9 +392,12 @@ Class XNAEffect = "XNAEffect"
 	Method GraphicsDevice:XNAGraphicsDevice() Property = "GetGraphicsDevice"
 	Method Name$() Property = "GetName"
 	Method GetParameter:XNAEffectParameter(name$) Property = "GetParameter"
+	Method GetParameter:XNAEffectParameter(index) Property = "GetParameter2"
 	Method CountParameters() Property
 	Method GetTechnique:XNAEffectTechnique(name$) Property= "GetTechnique"
+	Method GetTechnique:XNAEffectTechnique(index) Property= "GetTechnique2"
 	Method CountTechniques() Property
+	Method Dispose()
 	
 	' may only be used with effects that usually implements IEffectMatrices
 	Method ProjectionMatrix:Void(mat:Float[]) = "SetProjection"
@@ -443,21 +446,14 @@ Class XNAEffectParameter  = "XNAEffectParameter"
 	Method ParameterType() Property = "GetParameterType"
 	Method Name$() Property = "GetName"
 	Method Semantic$() Property = "GetSemantic"
+	Method Elements:XNAEffectParameter[]() Property = "GetElements"
+	Method StructureMembers:XNAEffectParameter[]() Property = "GetStructureMembers"
 	Method SetValue:Void(v0?)	= "SetBool"
-	Method SetValue:Void(v0?,v1?)	= "SetBool"
-	Method SetValue:Void(v0?,v1?,v2?)	= "SetBool"
-	Method SetValue:Void(v0?,v1?,v2?,v3?)	= "SetBool"
 	Method SetValue:Void(value?[])	= "SetBoolArray"
 	Method SetValue:Void(v0%)	= "SetInt"
-	Method SetValue:Void(v0%,v1%)	= "SetInt"
-	Method SetValue:Void(v0%,v1%,v2%)	= "SetInt"
-	Method SetValue:Void(v0%,v1%,v2%,v3%)	= "SetInt"
 	Method SetValue:Void(value%[])	= "SetIntArray"
 	Method SetValue:Void(value#)	= "SetFloat"
 	Method SetValue:Void(v0#)	= "SetFloat"
-	Method SetValue:Void(v0#,v1#)	= "SetFloat"
-	Method SetValue:Void(v0#,v1#,v2#)	= "SetFloat"
-	Method SetValue:Void(v0#,v1#,v2#,v3#)	= "SetFloat"
 	Method SetValue:Void(value#[])	= "SetFloatArray"
 	Method SetValue:Void(value$)	= "SetString"
 	Method SetValue:Void(value:XNATexture)	= "SetTexture"
@@ -478,7 +474,7 @@ Class XNAVertexBuffer
 End
 
 
-Class XNAMeshIndexBuffer
+Class XNAIndexBuffer
 	Method BufferUsage() Property
 	Method IndexCount() Property
 	Method IndexElementSize() Property
