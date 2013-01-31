@@ -3,7 +3,7 @@
 #XNA_PERPIXEL_LIGHNING=True' only used in reach profile
 #XNA_PROFILE="reach"
 #XNA_MIPMAP_FILTER=1' 0 for point / 1 for linear
-#XNA_MIPMAP_QUALITY=1 ' sets bias to 0=0.5, 1=0, 2=-0.5
+#XNA_MIPMAP_QUALITY=2 ' sets bias to 0=0.5, 1=0, 2=-0.5
 
 #If TARGET<>"xna"
 	#Error "Need XNA target"
