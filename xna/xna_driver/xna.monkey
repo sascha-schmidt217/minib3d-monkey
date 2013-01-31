@@ -45,23 +45,24 @@ Const DepthFormat_Depth24 = 2
 Const DepthFormat_Depth24Stencil8 = 3
 
 ' Defines classes that can be used for effect parameters or shader constants.
-Const EFFECT_PARAMETER_CLASS_MATRIX 	= 0
-Const EFFECT_PARAMETER_CLASS_OBJECT 	= 1
-Const EFFECT_PARAMETER_CLASS_SCALAR 	= 2
-Const EFFECT_PARAMETER_CLASS_STRUCT 	= 3
-Const EFFECT_PARAMETER_CLASS_VECTOR 	= 4
+Const EFFECT_PARAMETER_CLASS_SCALAR 	= 0
+Const EFFECT_PARAMETER_CLASS_VECTOR 	= 1
+Const EFFECT_PARAMETER_CLASS_MATRIX 	= 2
+Const EFFECT_PARAMETER_CLASS_OBJECT 	= 3
+Const EFFECT_PARAMETER_CLASS_STRUCT 	= 4
 
 ' Defines types that can be used for effect parameters or shader constants.
-Const EFFECT_PARAMETER_TYPE_BOOL 		= 0
-Const EFFECT_PARAMETER_TYPE_INT32 		= 1
-Const EFFECT_PARAMETER_TYPE_SINGLE 		= 2
-Const EFFECT_PARAMETER_TYPE_STRING 		= 3
-Const EFFECT_PARAMETER_TYPE_TEXTURE 	= 4
-Const EFFECT_PARAMETER_TYPE_TEXTURE1D	= 5
-Const EFFECT_PARAMETER_TYPE_TEXTURE2D	= 6
-Const EFFECT_PARAMETER_TYPE_TEXTURE3D	= 7
-Const EFFECT_PARAMETER_TYPE_TEXTURECUBE	= 8
-Const EFFECT_PARAMETER_TYPE_VOID 		= 9
+Const EFFECT_PARAMETER_TYPE_VOID 		= 0
+Const EFFECT_PARAMETER_TYPE_BOOL 		= 1
+Const EFFECT_PARAMETER_TYPE_INT32 		= 2
+Const EFFECT_PARAMETER_TYPE_SINGLE 		= 3
+Const EFFECT_PARAMETER_TYPE_STRING 		= 4
+Const EFFECT_PARAMETER_TYPE_TEXTURE 	= 5
+Const EFFECT_PARAMETER_TYPE_TEXTURE1D	= 6
+Const EFFECT_PARAMETER_TYPE_TEXTURE2D	= 7
+Const EFFECT_PARAMETER_TYPE_TEXTURE3D	= 8
+Const EFFECT_PARAMETER_TYPE_TEXTURECUBE	= 9
+
 
 Const BLENDFUNCTION_ADD = 0
 Const BLENDFUNCTION_SUBSTRACT = 1
@@ -317,6 +318,7 @@ Class XNAGraphicsDevice  = "XNAGraphicsDevice"
 	Method GetShaderVersion:Float()
 	Method PreferMultiSampling(value?) = "SetPreferMultiSampling"
 	Method GraphicsDeviceStatus:Int()
+	Method SetTexture:Void(index, texture:XNATexture)
 End
 
 '----------------------------------------------------------------------------------------------------------
@@ -452,7 +454,6 @@ Class XNAEffectParameter  = "XNAEffectParameter"
 	Method SetValue:Void(value?[])	= "SetBoolArray"
 	Method SetValue:Void(v0%)	= "SetInt"
 	Method SetValue:Void(value%[])	= "SetIntArray"
-	Method SetValue:Void(value#)	= "SetFloat"
 	Method SetValue:Void(v0#)	= "SetFloat"
 	Method SetValue:Void(value#[])	= "SetFloatArray"
 	Method SetValue:Void(value$)	= "SetString"

@@ -374,6 +374,19 @@ Function B2DDrawImageRect( image:B2DImage,x#,y#,srcX,srcY,srcWidth,srcHeight,rot
 
 End
 
+Function B2DDrawImageRect( image:B2DImage,x#,y#,width#,height#)
+
+#If CONFIG="debug"
+	DebugRenderDevice
+#End
+
+	context.Validate
+	
+	Local f:=image.frames[0]
+	spriteBatch.Draw (image.surface,-image.tx+x,-image.ty+y,width,height,f.x,f.y,image.width,image.height)
+
+End 
+
 Function B2DDrawTextureRect( texture:TTexture,x#,y#,srcX,srcY,srcWidth,srcHeight)
 
 #If CONFIG="debug"

@@ -203,6 +203,11 @@ public class XNAGraphicsDevice
     {
     	//graphicsManager.PreferMultiSampling = value;
     }
+    
+    public void SetTexture(int index, XNATexture texture)
+    {
+    	_device.Textures[index] = texture._texture2d;
+    }
 	
 	public XNAMesh CreateMesh()
 	{

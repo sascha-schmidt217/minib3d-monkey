@@ -459,7 +459,6 @@ Private
 							
 						'Endif ''end preserve skip_sprite_state-------------------------------
 		
-						_device.SamplerState(ix, state)
 						_device.SetTexture(ix, xnaTex)
 						_shaderTexture.TextureBlend(ix, tex_blend)
 						_shaderTexture.TextureTransform(ix, tex_u_pos,tex_v_pos, tex_u_scale, tex_v_scale , tex_ang,tex_coords)

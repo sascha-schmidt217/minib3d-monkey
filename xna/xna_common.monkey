@@ -82,7 +82,7 @@ Class XNARenderBase Extends TRender
 		#else if XNA_MIPMAP_QUALITY=1 then 
 			Local bias:Float = 0
 		#else if XNA_MIPMAP_QUALITY=2 then 
-			Local bias:Float = -0.5
+			Local bias:Float = -0.75
 			Print bias
 		#End 
 		
@@ -173,7 +173,7 @@ Class XNARenderBase Extends TRender
 	
 	
 	Method BindTexture:TTexture(tex:TTexture,flags:Int)
-	
+		
 			' if mask flag is true, mask pixmap
 		If flags&4
 			tex.pixmap.MaskPixmap(0,0,0)
@@ -226,7 +226,12 @@ Class XNARenderBase Extends TRender
 			If height>1 height *= 0.5
 
 			If tex.resize_smooth Then 
-				pix=TPixmapXNA(pix.ResizePixmap(width,height) )
+				Print "Ressize"
+				'pix=TPixmapXNA(pix.ResizePixmap(width,height) )
+				pix=UnsharpMask(TPixmapXNA(pix.ResizePixmap(width,height) ))
+				
+				
+				
 			Else 
 				pix=TPixmapXNA(pix.ResizePixmapNoSmooth(width,height) )
 			End
@@ -235,10 +240,93 @@ Class XNARenderBase Extends TRender
 		Forever
 			
 		tex.no_mipmaps=mip_level
+		Print "Levels " + mip_level
 		
 		Return tex	
 	End
 		
+	' combined blur + substract matrix
+	Field mask:Int[] = [-1,-1,-1,
+						-1,17,-1,
+						-1,-1,-1]	
+					
+	Method Clip:Int(val%)
+		If val > 255 Then 
+			val = 255
+		Else If val < 0 Then 
+			val = 0
+		End 
+		Return val
+	End 	
+	
+	Method UnsharpMask:TPixmapXNA(src:TPixmapXNA)
+	
+		Local width:= src.width
+		Local height:= src.height
+		Local dst:= TPixmapXNA(src.CreatePixmap(width,height))
+		Local stride:= src.pitch*4
+		
+		Local srcPixels:= src.pixels
+		
+		For Local y = 0 Until height 
+		
+			For Local x = 0 Until width
+			
+				If x < 2 Or y < 2 Or x >= width -2 Or y >= height -2
+				
+					Local rgb:= src.GetPixel(x, y)
+					Local red 	= (rgb & $000000ff )
+					Local green = (rgb & $0000ff00 ) Shr 8
+					Local blue 	= (rgb & $00ff0000 ) Shr 16
+					
+					dst.SetPixel(x,y, red,green, blue, 255)
+				
+				Else
+				
+					Local r = 0, g = 0, b = 0
+				
+					Local blured:= 0
+					
+					For Local iy = -1 To 1
+						For Local ix = -1 To 1
+						
+							Local rgb:= src.GetPixel(ix+x, iy+y)
+							
+							Local red 	= (rgb & $000000ff )
+							Local green = (rgb & $0000ff00 ) Shr 8
+							Local blue 	= (rgb & $00ff0000 ) Shr 16
+	
+							Local color = ((red* 79 + green * 150 + blue * 27) Shr 8); 
+							blured+= color
+							
+							b += (mask[(iy + 1) * 3 + ix + 1] * blue);
+		                    g += (mask[(iy + 1) * 3 + ix + 1] * green);
+		                    r += (mask[(iy + 1) * 3 + ix + 1] * red);
+						End 
+					End 
+	
+					blured/=9
+					
+					Local rgb:= src.GetPixel(x, y)
+					Local red 	= (rgb & $000000ff )
+					Local green = (rgb & $0000ff00 ) Shr 8
+					Local blue 	= (rgb & $00ff0000 ) Shr 16
+					Local grey = ((red* 79 + green * 150 + blue * 27) Shr 8); 
+					
+					If Abs(blured - grey) < 5 Then 
+						dst.SetPixel(x,y, Clip(red),Clip(green), Clip(blue), 255)
+					else 
+						dst.SetPixel(x,y, Clip(r/9),Clip(g/9), Clip(b/9), 255)
+					End 
+					
+				End
+				
+			End
+		End 
+		
+		Return dst
+	End 
+	
 	
 	Method CombineBrushes(brushA:TBrush,brushB:TBrush )
 
