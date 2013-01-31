@@ -363,6 +363,7 @@ Class TRender
 
 				If inview
 					
+					Local wireFrameIsEnabled:= wireframe
 					If mesh.wireframe Or wireframe Then wireframe = True
 					
 					If mesh.auto_fade=True Then mesh.AutoFade(cam)
@@ -389,7 +390,7 @@ Class TRender
 	
 					Endif
 					
-					wireframe = False
+					wireframe = wireFrameIsEnabled
 					
 				Endif
 			Endif
@@ -410,16 +411,15 @@ Class TRender
 		
 		For mesh = Eachin render_alpha_list
 			
-			If mesh.wireframe Or wireframe Then wireframe = True
+			Local wireFrameIsEnabled:= wireframe
+			If mesh.wireframe Then wireframe = True
 			
 			TRender.render.Render(mesh,cam)
 			
-			wireframe = False
+			wireframe = wireFrameIsEnabled
 
 		Next
-		
-		
-		
+
 		Finish() ''end render pass
 		
 	End

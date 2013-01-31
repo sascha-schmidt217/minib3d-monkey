@@ -227,8 +227,8 @@ Class XNARenderBase Extends TRender
 
 			If tex.resize_smooth Then 
 				Print "Ressize"
-				'pix=TPixmapXNA(pix.ResizePixmap(width,height) )
-				pix=UnsharpMask(TPixmapXNA(pix.ResizePixmap(width,height) ))
+				pix=TPixmapXNA(pix.ResizePixmap(width,height) )
+				'pix=UnsharpMask(TPixmapXNA(pix.ResizePixmap(width,height) ))
 				
 				
 				

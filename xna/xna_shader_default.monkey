@@ -306,9 +306,9 @@ Public
 			For Local light:= Eachin _pointLights
 			
 				_pLightType[index].SetValue(2)
-				_pLightPos[index].SetValue(light.mat.grid[3][0], light.mat.grid[3][1],light.mat.grid[3][2])
+				_pLightPos[index].SetValue(light.mat.grid[3][0], light.mat.grid[3][1],light.mat.grid[3][2],1.0)
 				_pLightRange[index].SetValue(light.range)
-				_pLightColor[index].SetValue(light.red, light.green, light.blue)
+				_pLightColor[index].SetValue(light.red, light.green, light.blue,1.0)
 				
 				index+=1
 			End 

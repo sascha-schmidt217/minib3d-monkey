@@ -1,3 +1,9 @@
+#MINIB3D_D3D11_RELEASE="false" 
+#MINIB3D_D3D11_PER_PIXEL_LIGHTING="false"
+
+#XNA_WINDOW_WIDTH=1280
+#XNA_WINDOW_HEIGHT=720
+#TEXT_FILES="*.txt|*.xml|*.json|*.obj|*.fx"
 
 Import minib3d
 
@@ -73,8 +79,9 @@ Class Game Extends App
 	
 		anim_time=0
 		
-		light=CreateLight(1)
+		light=CreateLight(2)
 		light.PositionEntity 0,3,-3
+		light.LightRange(10)
 		
 		cube=CreateCube()
 		cube.ScaleEntity(0.5,0.5,0.5)
@@ -90,10 +97,11 @@ Class Game Extends App
 		
 		ground = CreateGrid(10,10)
 		ground.ScaleEntity(20,1.0,20)
+		ground.EntityColor(255,0,0)
 		
 		old_ms=Millisecs()
 		
-		'Wireframe(True)
+		Wireframe(False)
 		
 		Print "main: init done"
 	End

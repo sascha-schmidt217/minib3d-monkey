@@ -38,6 +38,8 @@ Class SpriteBatch
 		Self.Draw(_pad,-1,-1)
 	End
 	
+	Field wireframeIsEnabled? = False
+	
 	Method BeginRender:Void()
 
 		TRender.render.Reset()
@@ -49,6 +51,9 @@ Class SpriteBatch
 		_mesh.Update(TRender.camera2D ) 
 
 		_begin = True 
+		
+		wireframeIsEnabled = TRender.wireframe
+		Wireframe(False)
 		
 		ClearBatch()
 		
@@ -75,6 +80,8 @@ Class SpriteBatch
 		TRender.render.Reset()
 
 		_begin = False 
+		
+		Wireframe(wireframeIsEnabled)
 	End
 
 	Method SetScissor(x#,y#,width#,height#)
