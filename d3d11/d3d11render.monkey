@@ -732,16 +732,27 @@ Private
 	
 	Method UpdateVBO:Int(surf:TSurface)
 
+		Local m:= D3D11.CreateD3D11Mesh(surf)
+		
 		If surf.reset_vbo = - 1 Then surf.reset_vbo = 255
 		
-		Local mesh:= D3D11.CreateD3D11Mesh(surf)
+		''update mesh positions
+		If surf.reset_vbo&1
+			If surf.vert_anim
+				'' vertex animation
+				UpdateVertexDataBufferPositions( 	surf.vert_data.buf,
+													surf.vert_anim[surf.anim_frame].buf,
+													surf.no_verts)
+				
+			Endif
+		Endif
 		
-		If surf.reset_vbo&1 or surf.reset_vbo&2 or surf.reset_vbo&4 or surf.reset_vbo&8
-			mesh.SetVertices(surf.vert_data.buf, surf.no_verts,surf.vert_data.buf.Length )
+		If surf.reset_vbo&1 Or surf.reset_vbo&2 Or surf.reset_vbo&4 Or surf.reset_vbo&8
+			m.SetVertices(surf.vert_data.buf, surf.no_verts,surf.vert_data.buf.Length )
 		Endif
 
 		If surf.reset_vbo&16
-			mesh.SetIndices(surf.tris.buf , surf.no_tris*3,surf.tris.buf.Length)
+			m.SetIndices(surf.tris.buf , surf.no_tris*3,surf.tris.buf.Length)
 		Endif
 
 		surf.reset_vbo=0

@@ -1,8 +1,7 @@
-#XNA_WINDOW_WIDTH=1280
-#XNA_WINDOW_HEIGHT=720
-#TEXT_FILES="*.txt|*.xml|*.json|*.obj|*.fx"
 
 Import minib3d
+Import minib3d.util.mojo
+#TEXT_FILES="*.txt|*.xml|*.json|*.obj|*.fx"
 
 ''note: if your models look weird, config.h depth buffer bits=32
 
@@ -51,12 +50,11 @@ Class Game Extends App
 		
 		init_gl = True
 
+		B2DInit() 
 		
 		cam = CreateCamera()
 		cam.CameraClsColor(0,0,80)
 		cam.PositionEntity 0,4,-10
-		
-		
 		
 		zombie[0]=LoadAnimMesh("zombie_b3d_base64.txt")
 		TAnimation.NormaliseWeights(zombie[0])
@@ -76,9 +74,8 @@ Class Game Extends App
 	
 		anim_time=0
 		
-		light=CreateLight(2)
+		light=CreateLight(1)
 		light.PositionEntity 0,3,-3
-		light.LightRange(10)
 		
 		cube=CreateCube()
 		cube.ScaleEntity(0.5,0.5,0.5)
@@ -94,11 +91,10 @@ Class Game Extends App
 		
 		ground = CreateGrid(10,10)
 		ground.ScaleEntity(20,1.0,20)
-		ground.EntityColor(255,0,0)
 		
 		old_ms=Millisecs()
 		
-		Wireframe(False)
+		'Wireframe(True)
 		
 		Print "main: init done"
 	End
@@ -184,7 +180,10 @@ Class Game Extends App
 	
 	Method OnRender()
 
+		'If Not init_gl Then Return
+		
 		RenderWorld()
+
 		renders=renders+1
 					
 	End

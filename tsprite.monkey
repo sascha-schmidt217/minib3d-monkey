@@ -1,6 +1,9 @@
 Import minib3d
 Import minib3d.tmesh
 
+'' NOTES:
+'' -- sprites default on TexBlend=3 (additive blend)
+
 Class TSprite Extends TMesh
 
 	Field angle#
@@ -392,7 +395,7 @@ Class TBatchSprite Extends TSprite
 		''
 		''add a parent to the entire batch mesh
 		''-- position only
-		Function BatchSpriteParent(id:Int=0, ent:TEntity,glob:Int=True)
+		Function BatchSpriteParent(id:Int=0, ent:TEntity,glob?=True)
 			
 			If id = 0 Then id = total_batch
 			If id = 0 Then Return

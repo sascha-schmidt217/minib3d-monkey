@@ -299,6 +299,7 @@ Class XNAMesh = "XNAMesh"
 	Method Render:Void()
 	Method SetVertices:Void(data:DataBuffer, count, flags)
 	Method SetIndices:Void(data:DataBuffer, count, flags)
+	Method SetVerticesPosition:Void(data:DataBuffer, count, flags)
 End
 
 '----------------------------------------------------------------------------------------------------------
@@ -315,6 +316,7 @@ Class XNAGraphicsDevice  = "XNAGraphicsDevice"
 	Method SamplerState:Void(index, state:XNASamplerState ) = "SetSamplerState"
 	Method ClearScreen:Void(r#,g#,b#, back? , depth? , stencil? )
 	Method Viewport:Void(x,y,width, height)
+	Method ScissorRectangle:Void(x,y,w,h)
 	Method GetShaderVersion:Float()
 	Method PreferMultiSampling(value?) = "SetPreferMultiSampling"
 	Method GraphicsDeviceStatus:Int()

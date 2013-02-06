@@ -68,17 +68,6 @@ void UpdateVertexDataBufferPositions(BBDataBuffer* destVertexDataBuffer, BBDataB
 		*(B3DVector*)dest++ = *src++;
 	}
 	while(src!=end);
-	
-	/*
-	for( int i = 0; i < count; ++i)
-	{
-		dest->x = src->x;
-		dest->y = src->y;
-		dest->z = src->z;
-		dest++;
-		src++;
-	}
-	*/
 }
 
 void Print_Monkey_Internal()
@@ -397,6 +386,7 @@ public:
 	void PSSetShaderResources(int startSlot, int numViews, Array<BBD3D11ShaderResourceView*> shaedrResourceViews );
 	void RSSetState( BBD3D11RasterizerState* resterizerState );
 	void RSSetViewports( Array<BBD3D11_VIEWPORT*> viewports );
+	void RSSetScissorRect(int x, int y, int width, int );
 	void Unmap( BBD3D11Resource* resource, int subResource );
 	void VSSetConstantBuffers(int startSlot, Array<BBD3D11Buffer*> constantBuffers);
 	void VSSetSamplers(int startSlot, Array<BBD3D11SamplerState*> samplers);	
@@ -993,6 +983,14 @@ void BBD3D11DeviceContext::DrawIndexedInstanced(int indexCountPerInst, int insto
 	_deviceContext->DrawIndexedInstanced((UINT)indexCountPerInst, (UINT)instount, (UINT)stratIndexLoc, baseVertexLoc, (UINT)startInstLoc);
 }
 */
+
+void BBD3D11DeviceContext::RSSetScissorRect(int x, int y, int width, int height)
+{
+	D3D11_RECT scissorRect;
+	scissorRect.left=x;scissorRect.top=y;
+	scissorRect.right=x+width;scissorRect.bottom=y+height;
+	_deviceContext->RSSetScissorRects( 1,&scissorRect );
+}
 
 void BBD3D11DeviceContext::DrawInstanced(int vertexCountPerInst, int instCount, int startVertLoc, int StartInstLoc)
 {

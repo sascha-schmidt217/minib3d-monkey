@@ -95,7 +95,7 @@ Class D3D11Mesh Implements IMesh
 		D3D11.DeviceContext.Unmap(_vertexBuffer[0],0)
 
 	End 
-	
+    
 	Method SetIndices:Void(data:DataBuffer, count, length)
 
 		If Not _indexBuffer Or _iLength <> length Then 	

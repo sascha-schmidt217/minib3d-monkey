@@ -169,17 +169,18 @@ Public
 		temp_list = Null
 		
 		'' clear some states as we return to mojo, or else we'll get the clamp error
-		_xna.ClearStates()
+		'' is done in Finish anyway
+		'' _xna.ClearStates()
 		
 	End
 
 	Method Finish:Void()
+		_xna.Reset()'' nothing is displayed without reset?
 	End
 	
 	Method EnableStates:Void()
 	End 
 
-	
 	Method UpdateVBO:Int(surf:TSurface)
 	
 		Local m:XNAMesh = Null
@@ -197,7 +198,18 @@ Public
 
 		If surf.reset_vbo=-1 Then surf.reset_vbo=255
 			
-		If surf.reset_vbo&1 Or surf.reset_vbo&2 Or surf.reset_vbo&4 Or surf.reset_vbo&8
+		''update mesh positions
+		If surf.reset_vbo&1
+			If surf.vert_anim
+				'' vertex animation
+				m.SetVerticesPosition(surf.vert_anim[surf.anim_frame].buf, surf.no_verts, 2)
+			Else
+				m.SetVerticesPosition(surf.vert_data.buf, surf.no_verts, surf.vbo_dyn)
+			Endif
+		Endif
+
+		''update rest of vertex info
+		If surf.reset_vbo&2 Or surf.reset_vbo&4 Or surf.reset_vbo&8
 			m.SetVertices(surf.vert_data.buf, surf.no_verts, surf.vbo_dyn)
 		Endif
 
@@ -324,14 +336,14 @@ Public
 	
 	Method UpdateCamera(cam:TCamera)
 		
-		'If (_device)
-			' viewport
-			_device.Viewport(cam.vx,cam.vy,cam.vwidth,cam.vheight)
-		
-			' clear buffers
-			_device.ClearScreen(cam.cls_r,cam.cls_g,cam.cls_b, cam.cls_color, cam.cls_zbuffer, False )
-		
-		'Endif
+		If cam.draw2D
+			_device.Viewport(0,0,DeviceWidth, DeviceHeight)
+		Else
+			_device.Viewport(cam.vx,cam.vy,cam.vwidth, cam.vheight)
+		End 
+
+		' clear buffers
+		_device.ClearScreen(cam.cls_r,cam.cls_g,cam.cls_b, cam.cls_color, cam.cls_zbuffer, False )
 		
 		' set view matrix					
 		_xna.ViewMatrix( cam.mod_mat.ToArray())
@@ -455,6 +467,8 @@ Private
 	' states
 	Field _rasterizerStates		:XNARasterizerState[]
 	Field _rasterizerWire		:XNARasterizerState
+	Field _rasterizerScissor	:XNARasterizerState
+	
 	Field _depthStencil			:XNADepthStencilState
 	Field _depthStencilDefault	:XNADepthStencilState
 	Field _depthStencilNone		:XNADepthStencilState
@@ -498,6 +512,11 @@ Public
 		_rasterizerWire.CullMode = CullMode_None
 		_rasterizerWire.FillMode = FillMode_WireFrame
 		
+		_rasterizerScissor= XNARasterizerState.Create()
+		_rasterizerScissor.CullMode = CullMode_None
+		_rasterizerScissor.FillMode = FillMode_Solid
+		_rasterizerScissor.ScissorTestEnable = True
+		
 		_depthStencilDefault = XNADepthStencilState._Default
 		_depthStencilNone 	= XNADepthStencilState.None
 		
@@ -510,16 +529,8 @@ Public
 		_depthStencilNoDepth.DepthBufferWriteEnable = False
 
 		_blendStates =[XNABlendState.Premultiplied, XNABlendState.Premultiplied, XNABlendState.AlphaBlend, XNABlendState.Additive, XNABlendState.Opaque]
-
-		#if XNA_MIPMAP_QUALITY=0 then 
-			Local bias:Float = 0.5
-		#else if XNA_MIPMAP_QUALITY=1 then 
-			Local bias:Float = 0
-		#else if XNA_MIPMAP_QUALITY=2 then 
-			Local bias:Float = -0.5
-			Print bias
-		#End 
 		
+		Local bias:Float = 0
 		_st_uvNormal = UVSamplerState.Create(TextureFilter_Point, bias)
 		
 		#if XNA_MIPMAP_FILTER=1 then
@@ -531,6 +542,20 @@ Public
 	End
 
 	Field _cam:TCamera
+	
+	''if we decide to return to monkey.mojo
+	Method ClearStates()
+		
+		 _device.SamplerState(0, _st_uvNormal._cU_cV )
+		_lastSamplerState = _st_uvNormal._cU_cV
+		_device.DepthStencilState = _depthStencilDefault
+		_device.BlendState = _blendStates[0]
+		
+		If _cam And _basicEffect
+			_basicEffect.Effect().FogEnabled = _cam.fog_mode > 0
+		End 
+			
+	End
 	
 	Method Reset()
 
@@ -586,7 +611,7 @@ Public
 	End
 	
 	Method Fog(near# ,far# ,r#,g#, b#, enabled?)
-		If enabled>0
+		If enabled
 			_lastEffect.Effect().FogEnabled = True
 			_lastEffect.Effect().FogStart = near
 	        _lastEffect.Effect().FogEnd = far
@@ -645,18 +670,25 @@ Public
 		End 
 
 		'----------------
-		
-		' fx flag 16 - disable backface culling
-		If _fx&16 Then 
-			_device.RasterizerState = _rasterizerStates[0] 
-		Else 
-			_device.RasterizerState = _rasterizerStates[2]
+
+		If cam.draw2D
+			
+			_device.RasterizerState = _rasterizerScissor
+			_device.ScissorRectangle(cam.vx,TRender.height-cam.vheight-cam.vy,cam.vwidth,cam.vheight)
+			
+		Else
+			''global wireframe rendering
+			If TRender.render.wireframe
+				_device.RasterizerState = _rasterizerWire
+			Else
+				' fx flag 16 - disable backface culling
+				If _fx&16 Then 
+					_device.RasterizerState = _rasterizerStates[0] 
+				Else 
+					_device.RasterizerState = _rasterizerStates[2]
+				End 
+			Endif
 		End 
-		
-		''global wireframe rendering
-		If TRender.render.wireframe
-			_device.RasterizerState = _rasterizerWire
-		Endif
 
 		' take into account auto fade alpha
 		_alpha=_alpha-ent.fade_alpha
@@ -682,22 +714,7 @@ Public
 	Method DisableDepth()
 		_device.DepthStencilState = _depthStencilNoDepth
 	End
-	
-	''if we decide to return to monkey.mojo
-	Method ClearStates()
-		
-		 _device.SamplerState(0, _st_uvNormal._cU_cV )
-		_lastSamplerState = _st_uvNormal._cU_cV
-		_device.DepthStencilState = _depthStencilDefault
-		_device.BlendState = _blendStates[0]
-		
-		If _cam And _basicEffect
-			_basicEffect.Effect().FogEnabled = _cam.fog_mode > 0
-		End 
-			
-	End
-	
-	
+
 	Method CombineBrushes(brushA:TBrush,brushB:TBrush )
 
 		' get main brush values
@@ -715,11 +732,11 @@ Public
 
 			Local shine2#=0.0
 
-			_red   =_red  *brushB.red
-			_green =_green*brushB.green
-			_blue  =_blue *brushB.blue
-			_alpha =_alpha *brushB.alpha
-			shine2=brushB.shine
+			_red   = _red * brushB.red
+			_green = _green * brushB.green
+			_blue  = _blue * brushB.blue
+			_alpha = _alpha * brushB.alpha
+			shine2= brushB.shine
 			If _shine=0.0 Then _shine=shine2
 			If _shine<>0.0 And shine2<>0.0 Then _shine=_shine*shine2
 			If _blend=0 Then _blend=brushB.blend ' overwrite master brush if master brush blend=0

@@ -16,6 +16,7 @@ Hold down mouse button to emit *FIRE*!
 #XNA_WINDOW_HEIGHT=720
 #XNA_WINDOW_RESIZABLE=false
 #XNA_WINDOW_FULLSCREEN=False
+#TEXT_FILES="*.txt|*.xml|*.json|*.obj|*.fx"
 
 Import minib3d
 Import minib3d.util.mojo

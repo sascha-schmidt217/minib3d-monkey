@@ -144,7 +144,7 @@ Print s
 		cam_matrix_upload=0
 		
 		ResetLights()
-		
+
 		'Print "....begin render...."
 		
 	End
@@ -632,7 +632,6 @@ Print s
 
 				Next
 			Endif
-			last_tex_count = tex_count
 
 
 			For Local ix=0 To tex_count-1			
@@ -853,6 +852,9 @@ Print s
 				If shader.u.texcoords1 <>-1 Then glDisableVertexAttribArray(shader.u.texcoords1)
 				
 			Endif
+
+			last_tex_count = tex_count
+			
 			
 			If DEBUG And GetGLError() Then Print "*tex2"			
 			
@@ -1130,10 +1132,10 @@ Print s
 				glBindBuffer(GL_ARRAY_BUFFER,surf.vbo_id[4])
 				If surf.reset_vbo <> 255
 					''update just anim data
-					glBufferSubData(GL_ARRAY_BUFFER,0,surf.no_verts*12 ,surf.vert_anim[surf.anim_frame].vert_buffer.buf )
+					glBufferSubData(GL_ARRAY_BUFFER,0,surf.no_verts*12 ,surf.vert_anim[surf.anim_frame].buf )
 				Else
 					glBufferData(GL_ARRAY_BUFFER,surf.no_verts*VertexDataBuffer.SIZE ,surf.vert_data.buf,GL_DYNAMIC_DRAW)
-					glBufferData(GL_ARRAY_BUFFER,surf.no_verts*12 ,surf.vert_anim[surf.anim_frame].vert_buffer.buf,GL_DYNAMIC_DRAW)
+					glBufferData(GL_ARRAY_BUFFER,surf.no_verts*12 ,surf.vert_anim[surf.anim_frame].buf,GL_DYNAMIC_DRAW)
 				Endif
 				
 			Else
@@ -1351,8 +1353,16 @@ Print s
 			Endif
 			
 		Else
-			glViewport(cam.vx,cam.vy,cam.vwidth,cam.vheight)
-			glScissor(cam.vx,cam.vy,cam.vwidth,cam.vheight)	
+		
+			' viewport
+			If cam.draw2D
+				glViewport(0,0,DeviceWidth, DeviceHeight)
+			Else
+				glViewport(cam.vx,cam.vy,cam.vwidth,cam.vheight)
+			End 
+			
+			glEnable(GL_SCISSOR_TEST)
+			glScissor(cam.vx,cam.vy,cam.vwidth,cam.vheight)
 	
 		Endif
 		

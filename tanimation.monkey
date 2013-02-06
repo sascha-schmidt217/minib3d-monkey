@@ -6,27 +6,30 @@ Import minib3d.monkeybuffer
 '' -- does not transform normals. TODO?
 
 
-Class TVertexAnim
+Class TVertexAnim Extends FloatBuffer
 	
 	Field offset:Int
-	Field vert_buffer:FloatBuffer
 	
-	Method PeekVertCoords:Vector(i:Int)
-
-		Return vert_buffer.PeekVertCoords(i)
+	Function Create:TVertexAnim(i:Int=0)
+	
+		i2f= CreateDataBuffer(4)
+	
+		Local b:TVertexAnim = New TVertexAnim
+		b.buf = CreateDataBuffer(i*SIZE+1)
+		Return b
 		
 	End
-	
+
 End
 
 Class TAnimation
 	
-	#If TARGET="xna" Or TARGET="win8"
+	
+
+	#If TARGET="xna"
 	
 		Const DONT_USE_VERT_POINTER:Int = True
-		
 	#Else
-	
 		Const DONT_USE_VERT_POINTER:Int = False
 	
 	#Endif
@@ -280,39 +283,25 @@ Class TAnimation
 			'Local va_id:Int=0		
 
 			''point to new buffer			
-			If anim_surf.vert_anim[frame].vert_buffer
+			If anim_surf.vert_anim[frame]
 			
-				If DONT_USE_VERT_POINTER = False
+				'If DONT_USE_VERT_POINTER = False
 				
-					
 					anim_surf.anim_frame = frame
 					anim_surf.reset_vbo = anim_surf.reset_vbo|1
 					
-				Else
+				'Else
 					
-						#If TARGET="xna" Or TARGET="win8"
-	
-							UpdateVertexDataBufferPositions(anim_surf.vert_data.buf,  
-									anim_surf.vert_anim[frame].vert_buffer.buf, 
-									anim_surf.no_verts)
-							
-						#Else
-							
-							'' --- per vertex memory copy, slow, used for XNA
-							For Local vid:Int=0 To anim_surf.no_verts-1
-								Local vv:Int = vid*3
-								anim_surf.vert_data.PokeVertCoords(vid, 
-									anim_surf.vert_anim[frame].vert_buffer.Peek(vv),
-									anim_surf.vert_anim[frame].vert_buffer.Peek(vv+1), 
-									anim_surf.vert_anim[frame].vert_buffer.Peek(vv+2))
-							Next 
-						
-						#Endif
-	
+					'' --- per vertex memory copy, slow, used for XNA
+					'For Local vid:Int=0 To anim_surf.no_verts-1
+						'Local vv:Int = vid*3
+						'anim_surf.vert_data.PokeVertCoords(vid, anim_surf.vert_anim[frame].Peek(vv), anim_surf.vert_anim[frame].Peek(vv+1), anim_surf.vert_anim[frame].Peek(vv+2))
+					'Next 
+					
 					''update vbo
-					anim_surf.reset_vbo = anim_surf.reset_vbo|1
+					'anim_surf.reset_vbo = anim_surf.reset_vbo|1
 					
-				Endif
+				'Endif
 			
 			Endif
 			
@@ -615,8 +604,8 @@ Class TAnimation
 				
 				If Not org_surf Then Continue
 				
-				org_surf.vert_anim[i] = New TVertexAnim ''new set of anim keys per surface			
-				org_surf.vert_anim[i].vert_buffer = FloatBuffer.Create(surf.no_verts*3)
+				'org_surf.vert_anim[i] = New TVertexAnim ''new set of anim keys per surface			
+				org_surf.vert_anim[i] = TVertexAnim.Create(surf.no_verts*3)
 				
 				sid = surf.surf_id
 		
@@ -628,7 +617,7 @@ Class TAnimation
 					'surf.vert_anim[i].vert_buffer.Poke(j3+1, mesh.anim_surf[sid].vert_coords.Peek(j3+1))
 					'surf.vert_anim[i].vert_buffer.Poke(j3+2, mesh.anim_surf[sid].vert_coords.Peek(j3+2))
 					org_surf.vert_data.GetVertCoords(ov, j)
-					org_surf.vert_anim[i].vert_buffer.PokeVertCoords(j,ov.x, ov.y, ov.z)
+					org_surf.vert_anim[i].PokeVertCoords(j,ov.x, ov.y, ov.z)
 					'surf.vert_anim[i].vert_buffer[j3+0]= mesh.anim_surf[sid].vert_data.VertexX(j)
 					'surf.vert_anim[i].vert_buffer[j3+1]= mesh.anim_surf[sid].vert_data.VertexY(j)
 					'surf.vert_anim[i].vert_buffer[j3+2]= mesh.anim_surf[sid].vert_data.VertexZ(j)

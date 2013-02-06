@@ -3,13 +3,14 @@ Import xna
 
 
 Class XNARenderBase Extends TRender
-
+	
 	' the device
 	Field _device:XNAGraphicsDevice 
 	
 	' states
 	Field _rasterizerStates		:XNARasterizerState[]
 	Field _rasterizerWire		:XNARasterizerState
+	Field _rasterizerScissor	:XNARasterizerState
 	Field _depthStencil			:XNADepthStencilState
 	Field _depthStencilDefault	:XNADepthStencilState
 	Field _depthStencilNone		:XNADepthStencilState
@@ -49,8 +50,11 @@ Class XNARenderBase Extends TRender
 	Method Render:Void(ent:TEntity, cam:TCamera = Null) 
 	End 
 	 
-	
 	'-----------------------------
+	
+	Method New()
+		_device = New XNAGraphicsDevice 
+	End
 	
 	Method GraphicsInit(flags:Int)
 	
@@ -60,14 +64,19 @@ Class XNARenderBase Extends TRender
 		' states
 		_rasterizerStates 	= [XNARasterizerState.CullNone, XNARasterizerState.CullCounterClockwise,XNARasterizerState.CullClockwise ]
 		
-		_rasterizerWire 	= XNARasterizerState.Create()
+		_rasterizerWire = XNARasterizerState.Create()
 		_rasterizerWire.CullMode = CullMode_None
 		_rasterizerWire.FillMode = FillMode_WireFrame
 		
-		_depthStencilDefault = XNADepthStencilState._Default
-		_depthStencilNone 	= XNADepthStencilState.None
+		_rasterizerScissor= XNARasterizerState.Create()
+		_rasterizerScissor.CullMode = CullMode_None
+		_rasterizerScissor.FillMode = FillMode_Solid
+		_rasterizerScissor.ScissorTestEnable = True
 		
-		_depthStencilNoWrite	= XNADepthStencilState.Create ''may need a new state based on default
+		_depthStencilDefault = XNADepthStencilState._Default
+		_depthStencilNone = XNADepthStencilState.None
+		
+		_depthStencilNoWrite = XNADepthStencilState.Create ''may need a new state based on default
 		_depthStencilNoWrite.DepthBufferEnable = True
 		_depthStencilNoWrite.DepthBufferWriteEnable = False
 		
@@ -77,15 +86,7 @@ Class XNARenderBase Extends TRender
 
 		_blendStates =[XNABlendState.Premultiplied, XNABlendState.Premultiplied, XNABlendState.AlphaBlend, XNABlendState.Additive, XNABlendState.Opaque]
 
-		#if XNA_MIPMAP_QUALITY=0 then 
-			Local bias:Float = 0.5
-		#else if XNA_MIPMAP_QUALITY=1 then 
-			Local bias:Float = 0
-		#else if XNA_MIPMAP_QUALITY=2 then 
-			Local bias:Float = -0.5
-			Print bias
-		#End 
-		
+		Local bias:Float = 0
 		_st_uvNormal = UVSamplerState.Create(TextureFilter_Point, bias)
 		
 		#if XNA_MIPMAP_FILTER=1 then
@@ -93,27 +94,35 @@ Class XNARenderBase Extends TRender
 		#else
 			_st_uvSmooth = UVSamplerState.Create(TextureFilter_LinearMipPoint, bias)
 		#End 
-		
+
 	End 
-	Method New()
-		_device = New XNAGraphicsDevice 
-	End
-	
+			
 	Method UpdateVBO:Int(surf:TSurface)
 
-		If surf.reset_vbo = - 1 Then surf.reset_vbo = 255
+		Local m:= CreateMesh(surf)
 		
-		Local mesh:= CreateMesh(surf)
-		
-		If surf.reset_vbo&1 or surf.reset_vbo&2 or surf.reset_vbo&4 or surf.reset_vbo&8
-			mesh.SetVertices(surf.vert_data.buf, surf.no_verts,surf.vert_data.buf.Length )
+		If surf.reset_vbo=-1 Then surf.reset_vbo=255
+			
+		''update mesh positions
+		If surf.reset_vbo&1
+			If surf.vert_anim
+				'' vertex animation
+				m.SetVerticesPosition(surf.vert_anim[surf.anim_frame].buf, surf.no_verts, 2)
+			Else
+				m.SetVerticesPosition(surf.vert_data.buf, surf.no_verts, surf.vbo_dyn)
+			Endif
+		Endif
+
+		''update rest of vertex info
+		If surf.reset_vbo&2 Or surf.reset_vbo&4 Or surf.reset_vbo&8
+			m.SetVertices(surf.vert_data.buf, surf.no_verts, surf.vbo_dyn)
 		Endif
 
 		If surf.reset_vbo&16
-			mesh.SetIndices(surf.tris.buf , surf.no_tris*3,surf.tris.buf.Length)
+			m.SetIndices(surf.tris.buf , surf.no_tris*3, surf.vbo_dyn)
 		Endif
 
-		surf.reset_vbo=0
+		surf.reset_vbo=False
 		
 	End
 	
@@ -171,7 +180,6 @@ Class XNARenderBase Extends TRender
 	    Return (x <> 0) And ((x & (x - 1)) = 0)
 	End
 	
-	
 	Method BindTexture:TTexture(tex:TTexture,flags:Int)
 		
 		' if mask flag is true, mask pixmap
@@ -227,9 +235,12 @@ Class XNARenderBase Extends TRender
 
 			If tex.resize_smooth Then 
 	
-				'pix=TPixmapXNA(pix.ResizePixmap(width,height) )
-				pix=UnsharpMask(TPixmapXNA(pix.ResizePixmap(width,height) ))
-
+				'If True'Not TEXTURE_SHARPENING_THRES
+					pix=TPixmapXNA(pix.ResizePixmap(width,height) )
+				'Else
+				'	pix=UnsharpMask(TPixmapXNA(pix.ResizePixmap(width,height)),XNA_TEXTURE_SHARPENING_THRES)
+				'End 
+				
 			Else 
 				pix=TPixmapXNA(pix.ResizePixmapNoSmooth(width,height) )
 			End
@@ -256,7 +267,7 @@ Class XNARenderBase Extends TRender
 		Return val
 	End 	
 	
-	Method UnsharpMask:TPixmapXNA(src:TPixmapXNA)
+	Method UnsharpMask:TPixmapXNA(src:TPixmapXNA, threshold)
 	
 		Local width:= src.width
 		Local height:= src.height
@@ -300,15 +311,15 @@ Class XNARenderBase Extends TRender
 					g = Clip(g/9)
 					b = Clip(b/9)
 
-					If Abs((0.299*r + 0.587*g + 0.114*b) - src_mono) < 4 Then 
+					If Abs((0.299*r + 0.587*g + 0.114*b) - src_mono) < threshold Then 
 						dst.SetPixel(x,y, src_red,src_green, src_blue, src_alpha)
 					else 
 						dst.SetPixel(x,y,r,g,b,src_alpha)
 					End 
 					
 				End
-				
 			End
+			
 		End 
 		
 		Return dst

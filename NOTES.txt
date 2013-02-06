@@ -1,9 +1,14 @@
 ****************************************
+minib3d v0.33.2
+bug fixes: xna, xna fog, xna vertex animation improved. opengl1.1 texture fix.
+
+****************************************
 minib3d v0.33
 
 - MDD and PC2 import for vertex animation
 	TModelMDD.LoadMDD:Void(mesh:TMesh, url:String, flipz:Int=0, variance:Float = EPSI)
 	TModelMDD.LoadPC2:Void(mesh:TMesh, url:String, flipz:Int=0, variance:Float = EPSI)
+	-- applied to an existing mesh
 	-- use variance to allow slight offset between loaded OBJ and MDD
 	-- frame 0 MUST be reference pose
 	
@@ -35,6 +40,7 @@ minib3d v0.33
 - mymesh.Wireframe(bool) --to turn on/off individual wireframes
 - auto-correct ratio of sprites / Draw()
 - entity.PositionToVertex(mesh, surf, vertex_id) --to position an entity to a specific vertex on a mesh (animated too!)
+- Added CreateLine() for thin lines (no thickness yet)
 - CreateMiniB3DMonkey() -- creates a minib3d monkey head mesh
 
 - other bug fixes (inc. b3d loading, xna fog, parenting problem)

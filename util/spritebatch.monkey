@@ -85,7 +85,14 @@ Class SpriteBatch
 	End
 
 	Method SetScissor(x#,y#,width#,height#)
+	
+		RenderBatch(_primTex)
+		ClearBatch()
+		
 		TRender.camera2D.CameraViewport(x,y,width,height)
+		TRender.render.UpdateCamera(TRender.camera2D)
+		_mesh.Update(TRender.camera2D )
+		 
 	End 
 	
 	Method SetColor:Void(r#,g#,b#)

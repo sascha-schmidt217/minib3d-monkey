@@ -65,6 +65,12 @@ Public
 	End 
 	
 	Method Finish:Void() 
+		
+		EndMojoRender()
+		
+		_device.RasterizerState = XNARasterizerState.CullClockwise;
+        _device.DepthStencilState = XNADepthStencilState.None;
+        
 	End 
 	
 	Method SetDrawShader:Void()
@@ -183,9 +189,12 @@ Public
 	End 
 
 	Method UpdateCamera(cam:TCamera) 
-
-		' set the viewport
-		_device.Viewport(cam.vx,cam.vy,cam.vwidth,cam.vheight)
+		
+		If cam.draw2D
+			_device.Viewport(0,0,DeviceWidth, DeviceHeight)
+		Else
+			_device.Viewport(cam.vx,cam.vy,cam.vwidth, cam.vheight)
+		End 
 	
 		' clear buffers
 		_device.ClearScreen(cam.cls_r,cam.cls_g,cam.cls_b, cam.cls_color, cam.cls_zbuffer, False )
@@ -230,17 +239,24 @@ Private
 	
 	Method SetStates(ent:TEntity, surf:TSurface)
 	
-		' fx flag 16 - disable backface culling
-		If _fx&16 Then 
-			_device.RasterizerState = _rasterizerStates[0] 
-		Else 
-			_device.RasterizerState = _rasterizerStates[2]
+		If _cam.draw2D
+			
+			_device.RasterizerState = _rasterizerScissor
+			_device.ScissorRectangle(_cam.vx,TRender.height-_cam.vheight-_cam.vy,_cam.vwidth,_cam.vheight)
+			
+		Else
+			''global wireframe rendering
+			If TRender.render.wireframe
+				_device.RasterizerState = _rasterizerWire
+			Else
+				' fx flag 16 - disable backface culling
+				If _fx&16 Then 
+					_device.RasterizerState = _rasterizerStates[0] 
+				Else 
+					_device.RasterizerState = _rasterizerStates[2]
+				End 
+			Endif
 		End 
-		
-		''global wireframe rendering
-		If TRender.render.wireframe
-			_device.RasterizerState = _rasterizerWire
-		Endif
 
 		' take into account auto fade alpha
 		_alpha=_alpha-ent.fade_alpha

@@ -22,6 +22,16 @@ Public
 		shader_id = SHADER_ID
 	End 
 	
+	Method New(effect:XNAEffect)
+		_effect = effect
+		_technique = _effect.GetTechnique(0)
+		_pass = _technique.Passes[0]
+	End 
+	
+	Method Effect:XNAEffect() Property 
+		Return _effect
+	End 
+	
 	Method Load( effectFile:String)
 	
 		if _effect Then 

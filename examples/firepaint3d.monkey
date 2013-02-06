@@ -2,7 +2,7 @@
 
 'Import minib3d.opengl.opengles20
 Import minib3d
-
+#TEXT_FILES="*.txt|*.xml|*.json|*.obj|*.fx"
 
 Function Main()
 	New Game

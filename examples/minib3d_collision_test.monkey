@@ -231,7 +231,7 @@ Class Game Extends App
 	
 	Method OnRender()
 		Init()
-		If Not init_gl Then Return
+
 		RenderWorld()
 
 		renders=renders+1
