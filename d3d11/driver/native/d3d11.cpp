@@ -73,13 +73,14 @@ void UpdateVertexDataBufferPositions(BBDataBuffer* destVertexDataBuffer, BBDataB
 void Print_Monkey_Internal()
 {
 	auto folder=Windows::Storage::ApplicationData::Current->LocalFolder;
-	Print(String( folder->Path ));
+	bbPrint(String( folder->Path ));
 }
 
 bool BBD3D11LoadImageData(BBDataBuffer* buffer, String path, Array<int> info)
 {
+	
 	int width,height,format;
-	unsigned char *data=BBWin8Game::Win8Game()->LoadImageData( path,&width,&height,&format );
+	unsigned char *data=BBWinrtGame::WinrtGame()->LoadImageData( path,&width,&height,&format );
 	if( ! data ) 
 	{
 		return false;
@@ -92,7 +93,7 @@ bool BBD3D11LoadImageData(BBDataBuffer* buffer, String path, Array<int> info)
 		free( data );
 
 	}else{
-		Print( String( "Bad image format: path=" )+path+", format="+format );
+		bbPrint( String( "Bad image format: path=" )+path+", format="+format );
 		free( data );
 		return 0;
 	}
@@ -727,7 +728,7 @@ void BBD3D11Buffer::Release()
 
 BBD3D11Device::BBD3D11Device()
 {
-	_device = BBWin8Game::Win8Game()->GetD3dDevice();
+	_device = BBWinrtGame::WinrtGame()->GetD3dDevice();
 }
 
 BBD3D11Device::~BBD3D11Device()
@@ -882,7 +883,7 @@ int BBD3D11Device::CheckMultisampleQualityLevels(int dxgiFormat, int sampleCount
 
 BBD3D11RenderTargetView* BBD3D11Device::GetBackBuffer()
 {
-	auto view = BBWin8Game::Win8Game()->GetRenderTargetView();
+	auto view = BBWinrtGame::WinrtGame()->GetRenderTargetView();
 	return new BBD3D11RenderTargetView( this, view );
 }
 
@@ -910,7 +911,7 @@ int BBD3D11Device::GetFeatureLevel()
 
 BBD3D11DeviceContext::BBD3D11DeviceContext(BBD3D11Device* device): BBD3D11DeviceChild(device)
 {
-	_deviceContext = BBWin8Game::Win8Game()->GetD3dContext();
+	_deviceContext = BBWinrtGame::WinrtGame()->GetD3dContext();
 }
 
 BBD3D11DeviceContext::~BBD3D11DeviceContext()
@@ -926,7 +927,7 @@ void BBD3D11DeviceContext::Release()
 void BBD3D11DeviceContext::ClearRenderTargetView(BBD3D11RenderTargetView*, float r,float g,float b )
 {
 	float rgba[]={ r,g,b,1.0f };
-	_deviceContext->ClearRenderTargetView( BBWin8Game::Win8Game()->GetRenderTargetView(),rgba );
+	_deviceContext->ClearRenderTargetView( BBWinrtGame::WinrtGame()->GetRenderTargetView(),rgba );
 }
 
 void BBD3D11DeviceContext::ClearDepthStancilView(BBD3D11DepthStencilView* view, int flags, float depth, int stencil)
@@ -1493,7 +1494,7 @@ void BBD3D11_BUFFER_DESC::SetStructureByteStride(int value) { _desc.StructureByt
 BBD3D11_INPUT_ELEMENT_DESC* BBD3D11_INPUT_ELEMENT_DESC::Create(String SemanticName,int  SemanticIndex,int Format,int InputSlot, 
 		int AlignedByteOffset,int InputSlotClass,int InstanceDataStepRate)
 	{
-		desc.SemanticName = (LPCSTR)SemanticName.ToCString<wchar_t>();
+		desc.SemanticName = (LPCSTR)SemanticName.ToCString<char>();
 		desc.SemanticIndex = (UINT)SemanticIndex;
 		desc.Format = (DXGI_FORMAT)Format;
 		desc.InputSlot = (UINT)InputSlot;

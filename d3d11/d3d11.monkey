@@ -7,12 +7,12 @@
 ''
 
 #MINIB3D_DRIVER="d3d11"
-#MINIB3D_D3D11_RELEASE="true" ' set to false for runtime shader compilation during development
-#MINIB3D_D3D11_PER_PIXEL_LIGHTING="false"
+#MINIB3D_D3D11_RELEASE="false" ' set to false for runtime shader compilation during development
+#MINIB3D_D3D11_PER_PIXEL_LIGHTING="true"
 
 #Print "miniB3D D3D11"
 
-#If TARGET<>"win8"
+#If TARGET<>"winrt"
 	#Error "Need windows 8."
 #Endif
 

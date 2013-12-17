@@ -57,9 +57,9 @@ public:
 	D3D_SHADER_MACRO _macro;
 	
 	String GetName(){ return String(_macro.Name);};
-	void SetName(String value) { _macro.Name = (LPCSTR)value.ToCString<wchar_t>();}
+	void SetName(String value) { _macro.Name = (LPCSTR)value.ToCString<char>();}
 	String GetDefinition(){ return (String)_macro.Definition;};
-	void SetDefinition(String value) { _macro.Definition = (LPCSTR)value.ToCString<wchar_t>();}
+	void SetDefinition(String value) { _macro.Definition = (LPCSTR)value.ToCString<char>();}
 };
 
 class BBD3D11_SHADER_DESC : public Object 
@@ -163,89 +163,36 @@ public:
 
 };
 
-//--------------------------------------------------------------------------------------
-
-BBDataBuffer* BBD3DCompileShaderFromFile(
-		String filename, String entryPoint, String target, int flags)							
-{
-	BBDataBuffer* buffer = 0;
-/*
-	ID3DBlob* compiledShader = NULL;
-	ID3DBlob* errorMessages = NULL;
-	LPCWSTR pFilename = (LPCWSTR)filename.ToCString<wchar_t>();
-	LPCSTR pEntryPoint = (LPCSTR)entryPoint.ToCString<wchar_t>();
-	LPCSTR pTarget = (LPCSTR)target.ToCString<wchar_t>();
-
-	// compile shader from file
-	HRESULT hr = D3DCompileFromFile(
-			pFilename,			// shader file name
-			NULL,				// macro
-			NULL,				// include
-			pEntryPoint,		// shader entrypoint
-			pTarget,			// shader profile
-			flags,				// Shader compile flags
-			0,					// Effect compile flags
-			&compiledShader, &errorMessages);
-
-	// check for errors
-	if ( FAILED(hr))
-	{
-		if ( errorMessages != 0 )
-		{
-			char* pCompileErrors = (char*) errorMessages->GetBufferPointer();
-			int length = errorMessages->GetBufferSize();
-			Print(String(pCompileErrors ,length ));
-		}
-	}
-	else
-	{
-		// create databuffer
-		int length = compiledShader->GetBufferSize();
-		buffer = new BBDataBuffer();
-		buffer->_New(length);
-
-		// copy shader to databuffer
-		auto dest = (void*)buffer->ReadPointer();
-		auto src = (void*)compiledShader->GetBufferPointer();
-		memcpy(dest, src, length);
-	}
-
-	SAFE_RELEASE(compiledShader);
-	SAFE_RELEASE(errorMessages);
-	delete[] pFilename;
-	delete[] pEntryPoint;
-	delete[] pTarget;
-*/
-
-	return buffer;
-}
-
-//--------------------------------------------------------------------------------------
 
 bool BBD3DCompileShader(String shader,
-		String entryPoint,			//name of the shader entry point function 
-		String target,				//string that specifies the shader target or set of shader features
-		String filename,			// string used in error messages..
+		String entryPoint,									//name of the shader entry point function 
+		String target,										//string that specifies the shader target or set of shader features
+		String filename,									// string used in error messages..
 		int flags, BBDataBuffer* outBuffer)					//combination of shader compile options
 {
 
 	bool result = true;
-	
-	// .ToCString works only with CHAR instead of wchar_t
-	// when converting to LPCSTR here ??
 
-	void* pSrcData = (void*)shader.ToCString<CHAR>();
-	SIZE_T length = (SIZE_T)shader.Length();
-	LPCSTR pEntryPoint = entryPoint.ToCString<CHAR>();
-	LPCSTR pTarget = target.ToCString<CHAR>();
-	LPCSTR pFilename = filename.ToCString<CHAR>();
+	std::string stdSource(shader.ToCString<char>());
+	std::string stdEntryPoint(entryPoint.ToCString<char>());
+	std::string stdTarget(target.ToCString<char>());
+	std::string stdFilename(filename.ToCString<char>());
 
 	ID3DBlob* compiledShader = NULL;
 	ID3DBlob* errorMessages = NULL;
 
 	// compile shader 
-	HRESULT hr = D3D11CompileFromMemory(pSrcData, length, pFilename, NULL, NULL,
-					pEntryPoint, pTarget, flags, 0, &compiledShader, &errorMessages);
+	HRESULT hr = D3D11CompileFromMemory((void*)stdSource.c_str(), 
+										(SIZE_T)shader.Length(), 
+										(LPCSTR)stdFilename.c_str(), 
+										NULL, 
+										NULL,
+										(LPCSTR)stdEntryPoint.c_str(), 
+										(LPCSTR)stdTarget.c_str(), 
+										flags, 
+										0, 
+										&compiledShader, 
+										&errorMessages);
 
 	// check for errors
 	if ( FAILED(hr))
@@ -265,19 +212,14 @@ bool BBD3DCompileShader(String shader,
 	}
 	
 	if ( errorMessages != 0 )
-		{
-			char* pCompileErrors = (char*) errorMessages->GetBufferPointer();
-			int length = errorMessages->GetBufferSize();
-			Print(String(pCompileErrors ,length ));
-		}
+	{
+		char* pCompileErrors = (char*) errorMessages->GetBufferPointer();
+		int length = errorMessages->GetBufferSize();
+		bbPrint(String(pCompileErrors ,length ));
+	}
 		
-
 	SAFE_RELEASE(compiledShader);
 	SAFE_RELEASE(errorMessages);
-	delete[] pEntryPoint;
-	delete[] pTarget;
-	delete[] pFilename;
-	
 	return result;
 }
 

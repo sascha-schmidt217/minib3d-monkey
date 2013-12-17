@@ -81,8 +81,8 @@ Public
 		#Else
 		
 			'' compile shaders & save bytecode
-			Local vs:= CompileShader(LoadString(vp_file), VERTEX_SHADER )
-			Local ps:= CompileShader(LoadString(fp_file), PIXEL_SHADER )
+			Local vs:= CompileShader(app.LoadString(vp_file), VERTEX_SHADER )
+			Local ps:= CompileShader(app.LoadString(fp_file), PIXEL_SHADER )
 			If Not(vs And ps) Then 
 				Error "**compiler error: "+vp_file+" "+vs+", "+fp_file+" "+ps
 			End

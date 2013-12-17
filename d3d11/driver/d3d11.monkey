@@ -4,7 +4,7 @@
 '' (C) 2012 Sascha Schmidt
 ''--------------------------------------------------------
 
-#if TARGET<>"win8"
+#if TARGET<>"winrt"
 	#Error "D3D11 is only supported on metro target."
 #Else
 

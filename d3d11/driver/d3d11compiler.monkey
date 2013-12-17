@@ -4,7 +4,7 @@
 '' (C) 2012 Sascha Schmidt
 ''--------------------------------------------------------
 
-#if TARGET<>"win8"
+#if TARGET<>"winrt"
 	#Error "d3d11compile is only supported on wind8 target."
 #else
 
